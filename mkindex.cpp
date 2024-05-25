@@ -10,10 +10,12 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#include <chrono>
 
 #include <sqlite3.h>
 
 #include "CommandLineParser.h"
+#include "HtmlProcessor.h"
 
 using namespace std;
 
@@ -43,30 +45,37 @@ int main(int argc,
 
     CommandLineParser parser(argc, argv);
 
-    if(!parser.hasOption("-h")){
+    if (!parser.hasOption("-h"))
+    {
 
         cout << "error: WWW_PATH must be specified." << endl;
 
         return 1;
-
     }
 
     filesystem::path wwwPath(parser.getOption("-h"));
     filesystem::path wikiPath = wwwPath.concat("/wiki");
-    
+
     cout << wikiPath << endl;
 
     error_code wikiNotFound;
     filesystem::directory_iterator wiki(wikiPath, wikiNotFound);
-    if(wikiNotFound){
+    if (wikiNotFound)
+    {
 
         cout << "error WIKI not founded." << endl;
 
         return 1;
     }
-    
-    for(auto file : wiki){
-        cout << file.path().filename() << endl;
+
+    HtmlProcessor processor;
+
+    for (auto file : wiki)
+    {
+        processor.addHtml(file.path());
+        if(processor.errorDetected){
+            cout << "error reading " << file.path().filename() << endl;
+        }
     }
 
     // // Open database file
