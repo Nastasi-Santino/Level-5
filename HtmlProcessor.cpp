@@ -3,7 +3,7 @@
 void HtmlProcessor::addHtml(filesystem::path HtmlPath)
 {
 
-    vector<string> words;
+    set<string> words;
     ifstream html;
     this->errorDetected = false;
 
@@ -37,7 +37,7 @@ void HtmlProcessor::addHtml(filesystem::path HtmlPath)
 
             if (!word.empty())
             {
-                words.push_back(word);
+                words.insert(word);
             }
         }
     }
@@ -45,4 +45,10 @@ void HtmlProcessor::addHtml(filesystem::path HtmlPath)
     this->HtmlList[HtmlPath.filename()] = words;
 
     html.close();
+}
+
+set<string> HtmlProcessor::returnWords(string filename){
+    if(!this->HtmlList[filename].empty()){
+        return this->HtmlList[filename];
+    }
 }

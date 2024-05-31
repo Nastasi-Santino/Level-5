@@ -5,7 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include <vector>
+#include <set>
 
 using namespace std;
 
@@ -14,9 +14,10 @@ class HtmlProcessor
 public:
     void addHtml(filesystem::path HtmlPath);
     bool errorDetected;
+    set<string> returnWords(string filename);
 
 private:
-    map<string, vector<string>> HtmlList;
+    map<string, set<string>> HtmlList;
 };
 
 #endif

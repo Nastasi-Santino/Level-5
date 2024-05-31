@@ -39,9 +39,6 @@ static int onDatabaseEntry(void *userdata,
 int main(int argc,
          const char *argv[])
 {
-    // char *databaseFile = "index.db";
-    // sqlite3 *database;
-    // char *databaseErrorMessage;
 
     CommandLineParser parser(argc, argv);
 
@@ -56,8 +53,6 @@ int main(int argc,
     filesystem::path wwwPath(parser.getOption("-h"));
     filesystem::path wikiPath = wwwPath.concat("/wiki");
 
-    cout << wikiPath << endl;
-
     error_code wikiNotFound;
     filesystem::directory_iterator wiki(wikiPath, wikiNotFound);
     if (wikiNotFound)
@@ -70,6 +65,8 @@ int main(int argc,
 
     HtmlProcessor processor;
 
+    // auto start = chrono::high_resolution_clock::now();
+
     for (auto file : wiki)
     {
         processor.addHtml(file.path());
@@ -77,6 +74,15 @@ int main(int argc,
             cout << "error reading " << file.path().filename() << endl;
         }
     }
+
+    // auto stop = chrono::high_resolution_clock::now();
+
+    // cout << chrono::duration_cast<chrono::milliseconds>(stop-start).count() / 1000.0F << endl;
+
+    //char *databaseFile = "index.db";
+    // sqlite3 *database;
+    // char *databaseErrorMessage;
+
 
     // // Open database file
     // cout << "Opening database..." << endl;
