@@ -47,8 +47,7 @@ void HtmlProcessor::addHtml(filesystem::path HtmlPath)
     html.close();
 }
 
-set<string> HtmlProcessor::returnWords(string filename){
-    if(!this->HtmlList[filename].empty()){
-        return this->HtmlList[filename];
-    }
+set<string> HtmlProcessor::returnWords(string filename)
+{
+    return this->HtmlList[filename];
 }

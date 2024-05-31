@@ -65,7 +65,7 @@ int main(int argc,
 
     HtmlProcessor processor;
 
-    // auto start = chrono::high_resolution_clock::now();
+    auto start = chrono::high_resolution_clock::now();
 
     for (auto file : wiki)
     {
@@ -75,45 +75,44 @@ int main(int argc,
         }
     }
 
-    // auto stop = chrono::high_resolution_clock::now();
+    auto stop = chrono::high_resolution_clock::now();
 
-    // cout << chrono::duration_cast<chrono::milliseconds>(stop-start).count() / 1000.0F << endl;
+    cout << chrono::duration_cast<chrono::milliseconds>(stop-start).count() / 1000.0F << endl;
 
-    //char *databaseFile = "index.db";
-    // sqlite3 *database;
-    // char *databaseErrorMessage;
+    char *databaseFile = (char *)"index.db";
+    sqlite3 *database;
+    char *databaseErrorMessage;
 
 
-    // // Open database file
-    // cout << "Opening database..." << endl;
-    // if (sqlite3_open(databaseFile, &database) != SQLITE_OK)
-    // {
-    //     cout << "Can't open database: " << sqlite3_errmsg(database) << endl;
+    // Open database file
+    cout << "Opening database..." << endl;
+    if (sqlite3_open(databaseFile, &database) != SQLITE_OK)
+    {
+        cout << "Can't open database: " << sqlite3_errmsg(database) << endl;
 
-    //     return 1;
-    // }
+        return 1;
+    }
 
-    // // Create a sample table
-    // cout << "Creating table..." << endl;
-    // if (sqlite3_exec(database,
-    //                  "CREATE TABLE room_occupation "
-    //                  "(id INTEGER PRIMARY KEY,"
-    //                  "room varchar DEFAULT NULL,"
-    //                  "reserved_from DATETIME,"
-    //                  "reserved_until DATETIME);",
-    //                  NULL,
-    //                  0,
-    //                  &databaseErrorMessage) != SQLITE_OK)
-    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
+    // Create a sample table
+    cout << "Creating table..." << endl;
+    if (sqlite3_exec(database,
+                     "CREATE TABLE wiki_pages "
+                     "(id INTEGER PRIMARY KEY,"
+                     " page_name varchar DEFAULT NULL,"
+                     " word varchar DEFAULT NULL);",
+                     NULL,
+                     0,
+                     &databaseErrorMessage) != SQLITE_OK)
+        cout << "Error: " << sqlite3_errmsg(database) << endl;
 
-    // // Delete previous entries if table already existed
-    // cout << "Deleting previous entries..." << endl;
-    // if (sqlite3_exec(database,
-    //                  "DELETE FROM room_occupation;",
-    //                  NULL,
-    //                  0,
-    //                  &databaseErrorMessage) != SQLITE_OK)
-    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
+    // Delete previous entries if table already existed
+    cout << "Deleting previous entries..." << endl;
+    if (sqlite3_exec(database,
+                     "DELETE FROM wiki_pages;",
+                     NULL,
+                     0,
+                     &databaseErrorMessage) != SQLITE_OK)
+        cout << "Error: " << sqlite3_errmsg(database) << endl;
 
     // // Create sample entries
     // cout << "Creating sample entries..." << endl;
@@ -155,7 +154,7 @@ int main(int argc,
     //                  &databaseErrorMessage) != SQLITE_OK)
     //     cout << "Error: " << sqlite3_errmsg(database) << endl;
 
-    // // Close database
-    // cout << "Closing database..." << endl;
-    // sqlite3_close(database);
+    // Close database
+    cout << "Closing database..." << endl;
+    sqlite3_close(database);
 }
