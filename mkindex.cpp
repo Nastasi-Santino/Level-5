@@ -63,26 +63,9 @@ int main(int argc,
         return 1;
     }
 
-    HtmlProcessor processor;
-
-    auto start = chrono::high_resolution_clock::now();
-
-    for (auto file : wiki)
-    {
-        processor.addHtml(file.path());
-        if(processor.errorDetected){
-            cout << "error reading " << file.path().filename() << endl;
-        }
-    }
-
-    auto stop = chrono::high_resolution_clock::now();
-
-    cout << chrono::duration_cast<chrono::milliseconds>(stop-start).count() / 1000.0F << endl;
-
     char *databaseFile = (char *)"index.db";
     sqlite3 *database;
     char *databaseErrorMessage;
-
 
     // Open database file
     cout << "Opening database..." << endl;
@@ -103,7 +86,9 @@ int main(int argc,
                      NULL,
                      0,
                      &databaseErrorMessage) != SQLITE_OK)
+    {
         cout << "Error: " << sqlite3_errmsg(database) << endl;
+    }
 
     // Delete previous entries if table already existed
     cout << "Deleting previous entries..." << endl;
@@ -112,48 +97,54 @@ int main(int argc,
                      NULL,
                      0,
                      &databaseErrorMessage) != SQLITE_OK)
+    {
         cout << "Error: " << sqlite3_errmsg(database) << endl;
+    }
 
-    // // Create sample entries
-    // cout << "Creating sample entries..." << endl;
-    // if (sqlite3_exec(database,
-    //                  "INSERT INTO room_occupation (room, reserved_from, reserved_until) VALUES "
-    //                  "('401F','2022-03-03 15:00:00','2022-03-03 16:00:00');",
-    //                  NULL,
-    //                  0,
-    //                  &databaseErrorMessage) != SQLITE_OK)
-    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
-    // if (sqlite3_exec(database,
-    //                  "INSERT INTO room_occupation (room, reserved_from, reserved_until) VALUES "
-    //                  "('501F','2022-03-03 15:00:00','2022-03-03 17:00:00');",
-    //                  NULL,
-    //                  0,
-    //                  &databaseErrorMessage) != SQLITE_OK)
-    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
-    // if (sqlite3_exec(database,
-    //                  "INSERT INTO room_occupation (room, reserved_from, reserved_until) VALUES "
-    //                  "('001R','2022-03-03 15:00:00','2022-03-03 16:30:00');",
-    //                  NULL,
-    //                  0,
-    //                  &databaseErrorMessage) != SQLITE_OK)
-    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
-    // if (sqlite3_exec(database,
-    //                  "INSERT INTO room_occupation (room, reserved_from, reserved_until) VALUES "
-    //                  "('1001F','2022-03-03 15:30:00','2022-03-03 16:30:00');",
-    //                  NULL,
-    //                  0,
-    //                  &databaseErrorMessage) != SQLITE_OK)
-    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
+    HtmlProcessor processor;
 
-    // // Fetch entries
-    // cout << "Fetching entries..." << endl;
-    // if (sqlite3_exec(database,
-    //                  "SELECT * from room_occupation;",
-    //                  onDatabaseEntry,
-    //                  0,
-    //                  &databaseErrorMessage) != SQLITE_OK)
-    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
+    // Create sample entries
+    cout << "Creating sample entries..." << endl;
 
+    auto start = chrono::high_resolution_clock::now();
+
+    for (auto file : wiki)
+    {
+        std::string pageName = file.path().filename();
+        processor.addHtml(file.path());
+        if (processor.errorDetected)
+            cout << "error reading " << pageName << endl;
+        // else
+        // {
+        //     for (auto word : processor.returnWords(pageName))
+        //     {
+        //         std::string newWikiPage = "INSERT INTO wiki_pages (page_name, word) VALUES ('" + pageName + "','" + word + "');";
+        //         cout << pageName + " " + word << endl;
+        //         if (sqlite3_exec(database,
+        //                          newWikiPage.c_str(),
+        //                          NULL,
+        //                          0,
+        //                          &databaseErrorMessage) != SQLITE_OK)
+        //             cout << "Error: " << sqlite3_errmsg(database) << endl;
+        //     }
+        // }
+    }
+    // INSERT INTO wiki_pages(page_name, word) VALUES('ABBA.html', 'hola');
+
+    auto stop = chrono::high_resolution_clock::now();
+
+    cout << chrono::duration_cast<chrono::milliseconds>(stop - start).count() / 1000.0F << endl;
+
+    // Fetch entries
+    cout << "Fetching entries..." << endl;
+    if (sqlite3_exec(database,
+                     "SELECT * from wiki_pages WHERE id = 1;",
+                     onDatabaseEntry,
+                     0,
+                     &databaseErrorMessage) != SQLITE_OK)
+    {
+        cout << "Error: " << sqlite3_errmsg(database) << endl;
+    }
     // Close database
     cout << "Closing database..." << endl;
     sqlite3_close(database);
