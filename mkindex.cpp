@@ -110,24 +110,26 @@ int main(int argc,
 
     for (auto file : wiki)
     {
+        // cout << "entre al for 1" << endl;
         std::string pageName = file.path().filename();
         processor.addHtml(file.path());
+        // cout << "sali de addHtml" << endl;
         if (processor.errorDetected)
             cout << "error reading " << pageName << endl;
-        // else
-        // {
-        //     for (auto word : processor.returnWords(pageName))
-        //     {
-        //         std::string newWikiPage = "INSERT INTO wiki_pages (page_name, word) VALUES ('" + pageName + "','" + word + "');";
-        //         cout << pageName + " " + word << endl;
-        //         if (sqlite3_exec(database,
-        //                          newWikiPage.c_str(),
-        //                          NULL,
-        //                          0,
-        //                          &databaseErrorMessage) != SQLITE_OK)
-        //             cout << "Error: " << sqlite3_errmsg(database) << endl;
-        //     }
-        // }
+        else
+        {
+            for (auto word : processor.returnWords(pageName))
+            {
+                std::string newWikiPage = "INSERT INTO wiki_pages (page_name, word) VALUES ('" + pageName + "','" + word + "');";
+                // cout << pageName + " " + word << endl;
+                if (sqlite3_exec(database,
+                                 newWikiPage.c_str(),
+                                 NULL,
+                                 0,
+                                 &databaseErrorMessage) != SQLITE_OK)
+                    cout << "Error: " << sqlite3_errmsg(database) << endl;
+            }
+        }
     }
     // INSERT INTO wiki_pages(page_name, word) VALUES('ABBA.html', 'hola');
 

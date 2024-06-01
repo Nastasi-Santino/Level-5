@@ -24,8 +24,9 @@ void HtmlProcessor::addHtml(filesystem::path HtmlPath)
         }
         else
         {
+            // cout << "entre al else" << endl;
             string word;
-            while (html.peek() != ' ' && html.peek() != '<' && !html.eof())
+            while (html.peek() != ' ' && html.peek() != '<' && /*html.peek() != '\'' &&*/ !html.eof()) // entra en loop infinito (? , rarisimo
             {
                 word.push_back(html.get());
             }
