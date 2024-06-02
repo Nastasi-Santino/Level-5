@@ -36,7 +36,8 @@ static int onDatabaseEntry(void *userdata,
     return 0;
 }
 
-string processHtmls(filesystem::path HtmlPath){
+string processHtmls(filesystem::path HtmlPath)
+{
 
     string processedText;
     ifstream html;
@@ -59,11 +60,14 @@ string processHtmls(filesystem::path HtmlPath){
         {
             // cout << "entre al else" << endl;
             string word;
-            while (html.peek() != '<' && !html.eof()) 
+            while (html.peek() != '<' && !html.eof())
             {
-                if(html.peek() == '\''){
+                if (html.peek() == '\'')
+                {
                     html.ignore(1);
-                } else {
+                }
+                else
+                {
                     word.push_back(html.get());
                 }
             }
@@ -76,18 +80,20 @@ string processHtmls(filesystem::path HtmlPath){
     }
 
     return processedText;
-
 }
 
-string PageNameEditor(string name){
+string PageNameEditor(string name)
+{
 
     string finalName;
-    const char * n = name.c_str();
+    const char *n = name.c_str();
     int i = 0;
 
-    while(*(n + i) != '.'){
-        if(*(n + i) != '\''){
-            finalName += *(n+i);
+    while (*(n + i) != '.')
+    {
+        if (*(n + i) != '\'')
+        {
+            finalName += *(n + i);
         }
         i++;
     }
@@ -147,7 +153,7 @@ int main(int argc,
                      &databaseErrorMessage) != SQLITE_OK)
     {
         cout << "Error: " << sqlite3_errmsg(database) << endl;
-    } 
+    }
 
     // Create a sample table
     cout << "Creating virtual table..." << endl;
@@ -160,7 +166,7 @@ int main(int argc,
                      &databaseErrorMessage) != SQLITE_OK)
     {
         cout << "Error: " << sqlite3_errmsg(database) << endl;
-    } 
+    }
 
     // Delete previous entries if table already existed
     cout << "Deleting previous entries..." << endl;
@@ -183,62 +189,39 @@ int main(int argc,
         cout << "Error: " << sqlite3_errmsg(database) << endl;
     }
 
-
     // Create sample entries
     cout << "Creating sample entries..." << endl;
 
-    auto start = chrono::high_resolution_clock::now();
-
     int i = 1;
-    for(auto file : wiki){
+    for (auto file : wiki)
+    {
 
         string pageName = PageNameEditor(file.path().filename());
         string text = processHtmls(file.path());
 
-        if(!text.empty()){
+        if (!text.empty())
+        {
 
-            //cout << pageName << endl;
+            // cout << pageName << endl;
 
-            string sqlCommand =  "INSERT INTO wiki_pages (page, pageText) VALUES ('" + pageName + "','" + text + "');";
-            if(sqlite3_exec(database,
-                            sqlCommand.c_str(),
-                            NULL,
-                            0,
-                            &databaseErrorMessage) != SQLITE_OK)
+            string sqlCommand = "INSERT INTO wiki_pages (page, pageText) VALUES ('" + pageName + "','" + text + "');";
+            if (sqlite3_exec(database,
+                             sqlCommand.c_str(),
+                             NULL,
+                             0,
+                             &databaseErrorMessage) != SQLITE_OK)
                 cout << "Error: " << sqlite3_errmsg(database) << endl;
-
         }
-
     }
 
-    auto stop = chrono::high_resolution_clock::now();
-
-    cout << chrono::duration_cast<chrono::milliseconds>(stop - start).count() / 1000.0F << endl;
-
-    start = chrono::high_resolution_clock::now();
-
     cout << "Copying entries to virtual table..." << endl;
-    if(sqlite3_exec(database,
-        "INSERT INTO wiki_pages_fts (rowid, page_name, content) SELECT id, page, pageText FROM wiki_pages",
-        NULL,
-        0,
-        &databaseErrorMessage) != SQLITE_OK)
+    if (sqlite3_exec(database,
+                     "INSERT INTO wiki_pages_fts (rowid, page_name, content) SELECT id, page, pageText FROM wiki_pages",
+                     NULL,
+                     0,
+                     &databaseErrorMessage) != SQLITE_OK)
         cout << "Error: " << sqlite3_errmsg(database) << endl;
 
-    stop = chrono::high_resolution_clock::now();
-
-    cout << chrono::duration_cast<chrono::milliseconds>(stop - start).count() / 1000.0F << endl;
-
-    // Fetch entries
-    // cout << "Fetching entries..." << endl;
-    // if (sqlite3_exec(database,
-    //                  "SELECT * from wiki_pages WHERE id = 1;",
-    //                  onDatabaseEntry,
-    //                  0,
-    //                  &databaseErrorMessage) != SQLITE_OK)
-    // {
-    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
-    // }
     // Close database
     cout << "Closing database..." << endl;
     sqlite3_close(database);
