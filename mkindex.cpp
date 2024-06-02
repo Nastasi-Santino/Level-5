@@ -173,6 +173,16 @@ int main(int argc,
         cout << "Error: " << sqlite3_errmsg(database) << endl;
     }
 
+    cout << "Deleting previous entries..." << endl;
+    if (sqlite3_exec(database,
+                     "DELETE FROM wiki_pages_fts;",
+                     NULL,
+                     0,
+                     &databaseErrorMessage) != SQLITE_OK)
+    {
+        cout << "Error: " << sqlite3_errmsg(database) << endl;
+    }
+
 
     // Create sample entries
     cout << "Creating sample entries..." << endl;
@@ -202,6 +212,20 @@ int main(int argc,
     }
 
     auto stop = chrono::high_resolution_clock::now();
+
+    cout << chrono::duration_cast<chrono::milliseconds>(stop - start).count() / 1000.0F << endl;
+
+    start = chrono::high_resolution_clock::now();
+
+    cout << "Copying entries to virtual table..." << endl;
+    if(sqlite3_exec(database,
+        "INSERT INTO wiki_pages_fts (rowid, page_name, content) SELECT id, page, pageText FROM wiki_pages",
+        NULL,
+        0,
+        &databaseErrorMessage) != SQLITE_OK)
+        cout << "Error: " << sqlite3_errmsg(database) << endl;
+
+    stop = chrono::high_resolution_clock::now();
 
     cout << chrono::duration_cast<chrono::milliseconds>(stop - start).count() / 1000.0F << endl;
 
