@@ -36,6 +36,65 @@ static int onDatabaseEntry(void *userdata,
     return 0;
 }
 
+string processHtmls(filesystem::path HtmlPath){
+
+    string processedText;
+    ifstream html;
+
+    html.open(HtmlPath, std::ios::in);
+    if (!html.is_open())
+    {
+        std::cout << "error opening " << HtmlPath.filename() << std::endl;
+        return "";
+    }
+
+    while (!html.eof())
+    {
+
+        if (html.peek() == '<')
+        {
+            html.ignore(std::numeric_limits<std::streamsize>::max(), '>');
+        }
+        else
+        {
+            // cout << "entre al else" << endl;
+            string word;
+            while (html.peek() != '<' && !html.eof()) 
+            {
+                if(html.peek() == '\''){
+                    html.ignore(1);
+                } else {
+                    word.push_back(html.get());
+                }
+            }
+
+            if (!word.empty())
+            {
+                processedText += word;
+            }
+        }
+    }
+
+    return processedText;
+
+}
+
+string PageNameEditor(string name){
+
+    string finalName;
+    const char * n = name.c_str();
+    int i = 0;
+
+    while(*(n + i) != '.'){
+        if(*(n + i) != '\''){
+            finalName += *(n+i);
+        }
+        i++;
+    }
+
+    return finalName;
+}
+
 int main(int argc,
          const char *argv[])
 {
@@ -79,16 +138,29 @@ int main(int argc,
     // Create a sample table
     cout << "Creating table..." << endl;
     if (sqlite3_exec(database,
-                     "CREATE TABLE wiki_pages "
+                     "CREATE TABLE wiki_pages"
                      "(id INTEGER PRIMARY KEY,"
-                     " page_name varchar DEFAULT NULL,"
-                     " word varchar DEFAULT NULL);",
+                     " page varchar DEFAULT NULL,"
+                     " pageText text DEFAULT NULL);",
                      NULL,
                      0,
                      &databaseErrorMessage) != SQLITE_OK)
     {
         cout << "Error: " << sqlite3_errmsg(database) << endl;
-    }
+    } 
+
+    // Create a sample table
+    cout << "Creating virtual table..." << endl;
+    if (sqlite3_exec(database,
+                     "CREATE VIRTUAL TABLE wiki_pages_fts USING fts5 "
+                     "(page_name,"
+                     " content);",
+                     NULL,
+                     0,
+                     &databaseErrorMessage) != SQLITE_OK)
+    {
+        cout << "Error: " << sqlite3_errmsg(database) << endl;
+    } 
 
     // Delete previous entries if table already existed
     cout << "Deleting previous entries..." << endl;
@@ -101,52 +173,48 @@ int main(int argc,
         cout << "Error: " << sqlite3_errmsg(database) << endl;
     }
 
-    HtmlProcessor processor;
 
     // Create sample entries
     cout << "Creating sample entries..." << endl;
 
     auto start = chrono::high_resolution_clock::now();
 
-    for (auto file : wiki)
-    {
-        // cout << "entre al for 1" << endl;
-        std::string pageName = file.path().filename();
-        processor.addHtml(file.path());
-        // cout << "sali de addHtml" << endl;
-        if (processor.errorDetected)
-            cout << "error reading " << pageName << endl;
-        else
-        {
-            for (auto word : processor.returnWords(pageName))
-            {
-                std::string newWikiPage = "INSERT INTO wiki_pages (page_name, word) VALUES ('" + pageName + "','" + word + "');";
-                // cout << pageName + " " + word << endl;
-                if (sqlite3_exec(database,
-                                 newWikiPage.c_str(),
-                                 NULL,
-                                 0,
-                                 &databaseErrorMessage) != SQLITE_OK)
-                    cout << "Error: " << sqlite3_errmsg(database) << endl;
-            }
+    int i = 1;
+    for(auto file : wiki){
+
+        string pageName = PageNameEditor(file.path().filename());
+        string text = processHtmls(file.path());
+
+        if(!text.empty()){
+
+            //cout << pageName << endl;
+
+            string sqlCommand =  "INSERT INTO wiki_pages (page, pageText) VALUES ('" + pageName + "','" + text + "');";
+            if(sqlite3_exec(database,
+                            sqlCommand.c_str(),
+                            NULL,
+                            0,
+                            &databaseErrorMessage) != SQLITE_OK)
+                cout << "Error: " << sqlite3_errmsg(database) << endl;
+
         }
+
     }
-    // INSERT INTO wiki_pages(page_name, word) VALUES('ABBA.html', 'hola');
 
     auto stop = chrono::high_resolution_clock::now();
 
     cout << chrono::duration_cast<chrono::milliseconds>(stop - start).count() / 1000.0F << endl;
 
     // Fetch entries
-    cout << "Fetching entries..." << endl;
-    if (sqlite3_exec(database,
-                     "SELECT * from wiki_pages WHERE id = 1;",
-                     onDatabaseEntry,
-                     0,
-                     &databaseErrorMessage) != SQLITE_OK)
-    {
-        cout << "Error: " << sqlite3_errmsg(database) << endl;
-    }
+    // cout << "Fetching entries..." << endl;
+    // if (sqlite3_exec(database,
+    //                  "SELECT * from wiki_pages WHERE id = 1;",
+    //                  onDatabaseEntry,
+    //                  0,
+    //                  &databaseErrorMessage) != SQLITE_OK)
+    // {
+    //     cout << "Error: " << sqlite3_errmsg(database) << endl;
+    // }
     // Close database
     cout << "Closing database..." << endl;
     sqlite3_close(database);

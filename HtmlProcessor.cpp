@@ -26,9 +26,14 @@ void HtmlProcessor::addHtml(filesystem::path HtmlPath)
         {
             // cout << "entre al else" << endl;
             string word;
-            while (html.peek() != ' ' && html.peek() != '<' && /*html.peek() != '\'' &&*/ !html.eof()) // entra en loop infinito (? , rarisimo
+            while (html.peek() != ' ' && html.peek() != '<' && !html.eof()) 
             {
-                word.push_back(html.get());
+                if(html.peek() == '\'' || html.peek() == '.' || html.peek() == ',' || html.peek() == '"' || html.peek() == '?'){
+                    html.ignore(1);
+                } else{
+                    word.push_back(html.get());
+                }
+                
             }
 
             if (html.peek() == ' ')
