@@ -11,11 +11,7 @@ El esquema que decidimos implementar fue el de una base de datos con ***tablas i
 
 Logramos implementar ambas herramientas en ***mkindex.cpp*** donde se crea la base de datos. Manejamos dos tablas, la primera es la tabla principal (*wiki_pages*) donde se tienen dos parámetros (aparte del id): *page*, referida al nombre de la página HTML, y *pageText*, referida al texto que contiene la página. La segunda tabla es la tabla indexada que implementa FTS5 ya que las búsquedas se realizarán en esta tabla. La misma cuenta con dos campos: *page_name* y *content*.
 
-EXPLICAR LA PARTE DE LA BUSQUEDA QUE ESO NO SE DONDE ESTA. @Nastasi-Santino
-
-## Configuración de los parámetros del ejecutable 👍
-
-@Nastasi-Santino no tengo idea que poner acá :P (si vos tmp sabes borralo xd)
+Una vez implementado fts, el trabajo de la busqueda se reduce extremadamente. La busquedas con fts la realizamos con SELECT page_name from wiki_pages_fts WHERE wiki_pages_fts MATCH 'PALABRA/s a buscar'. Para eso armamos una funcion que utliza sqlite3_exec() como callback para devolvernos lo que encuentra la busqueda. La funcion es muy simple, como solo hacemos SELECT page_name, lo que devuelve la base de datos es una unica columna con los nombres de las paginas, es decir argv va a tener un unico argumento, el nombre de la pagina. Luego, al nombre de la pagina le agregamos el formato para que el string que se guarda en results sea el link a la pagina de wikipedia.
 
 ## Optimización ✅
 
