@@ -2,8 +2,8 @@
 
 ## Participantes 👥
 
-* Santino Nastasi: programador.
-* Camila Castro: programador.
+* ***Santino Nastasi:*** programador.
+* ***Camila Castro:*** programador.
 
 ## Esquema de la base de datos e implementación 🧑‍💻
 
