@@ -193,6 +193,7 @@ int main(int argc,
     cout << "Creating sample entries..." << endl;
 
     int i = 1;
+    sqlite3_stmt *stmt;
     for (auto file : wiki)
     {
 
@@ -201,16 +202,21 @@ int main(int argc,
 
         if (!text.empty())
         {
-
-            // cout << pageName << endl;
-
-            string sqlCommand = "INSERT INTO wiki_pages (page, pageText) VALUES ('" + pageName + "','" + text + "');";
-            if (sqlite3_exec(database,
-                             sqlCommand.c_str(),
-                             NULL,
-                             0,
-                             &databaseErrorMessage) != SQLITE_OK)
+            string sqlCommand = "INSERT INTO wiki_pages (page, pageText) VALUES (?, ?);";
+            if (sqlite3_prepare_v2(database,
+                                   sqlCommand.c_str(),
+                                   -1,
+                                   &stmt,
+                                   NULL) != SQLITE_OK)
                 cout << "Error: " << sqlite3_errmsg(database) << endl;
+
+            else if (sqlite3_bind_text(stmt, 1, pageName.c_str(), -1, SQLITE_STATIC) != SQLITE_OK || sqlite3_bind_text(stmt, 2, text.c_str(), -1, SQLITE_STATIC) != SQLITE_OK)
+                cout << "Error: " << sqlite3_errmsg(database) << endl;
+
+            if (sqlite3_step(stmt) != SQLITE_DONE)
+                cout << "Error: " << sqlite3_errmsg(database) << endl;
+
+            sqlite3_finalize(stmt);
         }
     }
 
