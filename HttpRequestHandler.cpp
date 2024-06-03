@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <sqlite3.h>
+#include <chrono>
 
 #include "HttpRequestHandler.h"
 
@@ -21,16 +22,17 @@ HttpRequestHandler::HttpRequestHandler(string homePath)
     this->homePath = homePath;
 }
 
-static int databaseResponse(void * list,
-                           int argc,
-                           char **argv,
-                           char **azColName)
+static int databaseResponse(void *list,
+                            int argc,
+                            char **argv,
+                            char **azColName)
 {
 
-    if(argv[0]){
+    if (argv[0])
+    {
         string page = "https://es.wikipedia.org/wiki/";
         page += argv[0];
-        ((vector<string>*)list)->push_back(page);
+        ((vector<string> *)list)->push_back(page);
     }
 
     return 0;
@@ -73,8 +75,8 @@ bool HttpRequestHandler::serve(string url, vector<char> &response)
 }
 
 bool HttpRequestHandler::handleRequest(string url,
-                                               HttpArguments arguments,
-                                               vector<char> &response)
+                                       HttpArguments arguments,
+                                       vector<char> &response)
 {
     string searchPage = "/search";
     if (url.substr(0, searchPage.size()) == searchPage)
@@ -116,16 +118,15 @@ bool HttpRequestHandler::handleRequest(string url,
         sqlite3 *database;
         char *databaseErrorMessage;
 
+        auto start = chrono::high_resolution_clock::now();
+
         // Open database file
-        cout << "Opening database..." << endl;
         if (sqlite3_open(databaseFile, &database) != SQLITE_OK)
         {
             cout << "Can't open database: " << sqlite3_errmsg(database) << endl;
 
             return false;
         }
-
-        cout << searchString << endl;
 
         string sqlCommand = "SELECT page_name from wiki_pages_fts WHERE wiki_pages_fts MATCH '" + searchString + "'";
 
@@ -137,6 +138,10 @@ bool HttpRequestHandler::handleRequest(string url,
         {
             cout << "Error: " << sqlite3_errmsg(database) << endl;
         }
+
+        auto stop = chrono::high_resolution_clock::now();
+
+        searchTime = chrono::duration_cast<chrono::milliseconds>(stop - start).count() / 1000.0F;
 
         // Print search results
         responseString += "<div class=\"results\">" + to_string(results.size()) +
