@@ -22,12 +22,22 @@ HttpRequestHandler::HttpRequestHandler(string homePath)
     this->homePath = homePath;
 }
 
+/**
+ * @brief callback function that works with database response to query. In this case, saves the page names to list.
+ *
+ * @param list pointer to our list
+ * @param argc argc amount of columns in the response
+ * @param argv list with the string of each row
+ * @param azColName list with the string of each rows name
+ * @return 0 if no problems occur
+ */
 static int databaseResponse(void *list,
                             int argc,
                             char **argv,
                             char **azColName)
 {
 
+    // Saves the first colum (only one) in list.
     if (argv[0])
     {
         string page = "https://es.wikipedia.org/wiki/";
@@ -128,6 +138,7 @@ bool HttpRequestHandler::handleRequest(string url,
             return false;
         }
 
+        // Command to search with fts.
         string sqlCommand = "SELECT page_name from wiki_pages_fts WHERE wiki_pages_fts MATCH '" + searchString + "'";
 
         if (sqlite3_exec(database,
@@ -143,12 +154,12 @@ bool HttpRequestHandler::handleRequest(string url,
 
         searchTime = chrono::duration_cast<chrono::milliseconds>(stop - start).count() / 1000.0F;
 
-        // Print search results
+        // Print search results (add target= "_blank" in the href so it opens up in a new tab)
         responseString += "<div class=\"results\">" + to_string(results.size()) +
                           " results (" + to_string(searchTime) + " seconds):</div>";
         for (auto &result : results)
             responseString += "<div class=\"result\"><a href=\"" +
-                              result + "\">" + result + "</a></div>";
+                              result + "\" target=\"_blank\">" + result + "</a></div>";
 
         // Trailer
         responseString += "    </article>\
