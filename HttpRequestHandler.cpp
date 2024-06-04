@@ -112,7 +112,7 @@ bool HttpRequestHandler::handleRequest(string url,
 <body>\
     <article class=\"edaoogle\">\
         <div class=\"title\"><a href=\"/\">EDAoogle</a></div>\
-        <div class=\"subtitle\">Logical operators: ~ (NOT); | (OR); & (AND)</div>\
+        <div class=\"disclaimer\">Logical operators: ~ (NOT); | (OR); & (AND)</div>\
         <div class=\"search\">\
             <form action=\"/search\" method=\"get\">\
                 <input type=\"text\" name=\"q\" value=\"" +
