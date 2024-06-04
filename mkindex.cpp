@@ -10,12 +10,12 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#include <fstream>
 #include <chrono>
 
 #include <sqlite3.h>
 
 #include "CommandLineParser.h"
-#include "HtmlProcessor.h"
 
 using namespace std;
 
