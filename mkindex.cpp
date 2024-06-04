@@ -1,6 +1,8 @@
 /**
  * @file mkindex.cpp
  * @author Marc S. Ressl
+ * @author Santino Nastasi
+ * @author Camila Castro
  * @brief Makes a database index
  * @version 0.3
  *

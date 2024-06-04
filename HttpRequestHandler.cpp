@@ -1,6 +1,8 @@
 /**
  * @file HttpRequestHandler.h
  * @author Marc S. Ressl
+ * @author Santino Nastasi
+ * @author Camila Castro
  * @brief EDAoggle search engine
  * @version 0.3
  *
