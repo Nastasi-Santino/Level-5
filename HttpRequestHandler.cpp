@@ -138,8 +138,30 @@ bool HttpRequestHandler::handleRequest(string url,
             return false;
         }
 
+        // Includes Operators, & = AND, | = OR, ~ = NOT. and takes out problematic simbols.
+        string newSearchString;
+        for (auto simbol : searchString)
+        {
+            if (simbol == '&')
+            {
+                newSearchString += " AND ";
+            }
+            else if (simbol == '|')
+            {
+                newSearchString += " OR ";
+            }
+            else if (simbol == '~')
+            {
+                newSearchString += " NOT ";
+            }
+            else if (simbol == 32 || (simbol > 47 && simbol < 57) || (simbol > 64 && simbol < 123) || (simbol > 127 && simbol < 166))
+            {
+                newSearchString += simbol;
+            }
+        }
+
         // Command to search with fts.
-        string sqlCommand = "SELECT page_name from wiki_pages_fts WHERE wiki_pages_fts MATCH '" + searchString + "'";
+        string sqlCommand = "SELECT page_name from wiki_pages_fts WHERE wiki_pages_fts MATCH '" + newSearchString + "'";
 
         if (sqlite3_exec(database,
                          sqlCommand.c_str(),
@@ -149,6 +171,10 @@ bool HttpRequestHandler::handleRequest(string url,
         {
             cout << "Error: " << sqlite3_errmsg(database) << endl;
         }
+
+        // Close database
+        cout << "Closing database..." << endl;
+        sqlite3_close(database);
 
         auto stop = chrono::high_resolution_clock::now();
 
