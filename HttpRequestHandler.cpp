@@ -173,7 +173,6 @@ bool HttpRequestHandler::handleRequest(string url,
         }
 
         // Close database
-        cout << "Closing database..." << endl;
         sqlite3_close(database);
 
         auto stop = chrono::high_resolution_clock::now();
