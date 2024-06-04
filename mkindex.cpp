@@ -11,7 +11,6 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
-#include <chrono>
 
 #include <sqlite3.h>
 
@@ -36,12 +35,19 @@ static int onDatabaseEntry(void *userdata,
     return 0;
 }
 
+/**
+ * @brief process the .html files ignoring html tags.
+ *
+ * @param HtmlPath path to the .html
+ * @return string containing the processed data
+ */
 string processHtmls(filesystem::path HtmlPath)
 {
 
     string processedText;
     ifstream html;
 
+    // Open .html using fstream
     html.open(HtmlPath, std::ios::in);
     if (!html.is_open())
     {
@@ -49,17 +55,18 @@ string processHtmls(filesystem::path HtmlPath)
         return "";
     }
 
+    // loop until reaching end of file
     while (!html.eof())
     {
-
+        // if it finds a < ignores everything until the closing >
         if (html.peek() == '<')
         {
             html.ignore(std::numeric_limits<std::streamsize>::max(), '>');
         }
         else
         {
-            // cout << "entre al else" << endl;
-            string word;
+            string line;
+            // If it finds ' it ignores it because its problematic with sql reserved words.
             while (html.peek() != '<' && !html.eof())
             {
                 if (html.peek() == '\'')
@@ -68,13 +75,13 @@ string processHtmls(filesystem::path HtmlPath)
                 }
                 else
                 {
-                    word.push_back(html.get());
+                    line.push_back(html.get());
                 }
             }
 
-            if (!word.empty())
+            if (!line.empty())
             {
-                processedText += word;
+                processedText += line;
             }
         }
     }
@@ -82,6 +89,12 @@ string processHtmls(filesystem::path HtmlPath)
     return processedText;
 }
 
+/**
+ * @brief takes the .html out of the name and ignores ' in the name;
+ *
+ * @param name the name of the page include .html
+ * @return processed name
+ */
 string PageNameEditor(string name)
 {
 
@@ -115,6 +128,8 @@ int main(int argc,
         return 1;
     }
 
+    // Takes path from user and opens it with a directory iterator.
+
     filesystem::path wwwPath(parser.getOption("-h"));
     filesystem::path wikiPath = wwwPath.concat("/wiki");
 
@@ -127,6 +142,8 @@ int main(int argc,
 
         return 1;
     }
+
+    // database variables.
 
     char *databaseFile = (char *)"index.db";
     sqlite3 *database;
@@ -141,7 +158,7 @@ int main(int argc,
         return 1;
     }
 
-    // Create a sample table
+    // Create the wiki_pages table
     cout << "Creating table..." << endl;
     if (sqlite3_exec(database,
                      "CREATE TABLE wiki_pages"
@@ -155,7 +172,7 @@ int main(int argc,
         cout << "Error: " << sqlite3_errmsg(database) << endl;
     }
 
-    // Create a sample table
+    // Create the wiki_pages_fts virtual table using fts5
     cout << "Creating virtual table..." << endl;
     if (sqlite3_exec(database,
                      "CREATE VIRTUAL TABLE wiki_pages_fts USING fts5 "
@@ -179,6 +196,7 @@ int main(int argc,
         cout << "Error: " << sqlite3_errmsg(database) << endl;
     }
 
+    // Delete previous entries if the virtual table.
     cout << "Deleting previous entries..." << endl;
     if (sqlite3_exec(database,
                      "DELETE FROM wiki_pages_fts;",
@@ -190,16 +208,18 @@ int main(int argc,
     }
 
     // Create sample entries
-    cout << "Creating sample entries..." << endl;
+    cout << "Creating entries..." << endl;
 
-    int i = 1;
     sqlite3_stmt *stmt;
+
+    // The for iterates through every .html file in wiki/www
     for (auto file : wiki)
     {
-
+        // For each file, saves page name and text.
         string pageName = PageNameEditor(file.path().filename());
         string text = processHtmls(file.path());
 
+        // Then saves it in the database, done in two steps for safety reasons (more details in README.md).
         if (!text.empty())
         {
             string sqlCommand = "INSERT INTO wiki_pages (page, pageText) VALUES (?, ?);";
@@ -220,6 +240,7 @@ int main(int argc,
         }
     }
 
+    // Copy table to the virtual table that uses fts.
     cout << "Copying entries to virtual table..." << endl;
     if (sqlite3_exec(database,
                      "INSERT INTO wiki_pages_fts (rowid, page_name, content) SELECT id, page, pageText FROM wiki_pages",
