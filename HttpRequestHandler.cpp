@@ -114,7 +114,8 @@ bool HttpRequestHandler::handleRequest(string url,
 <body>\
     <article class=\"edaoogle\">\
         <div class=\"title\"><a href=\"/\">EDAoogle</a></div>\
-        <div class=\"disclaimer\">Logical operators: ~ (NOT); | (OR); & (AND)</div>\
+        <div class=\"disclaimer_title\">Logical operators</div>\
+        <div class=\"disclaimer_info\">~ (NOT) ; | (OR) ; & (AND)</div>\
         <div class=\"search\">\
             <form action=\"/search\" method=\"get\">\
                 <input type=\"text\" name=\"q\" value=\"" +
@@ -143,7 +144,7 @@ bool HttpRequestHandler::handleRequest(string url,
 
         // Includes Operators, & = AND, | = OR, ~ = NOT. and takes out problematic simbols.
         string newSearchString;
-        for (auto simbol : searchString)
+        for (unsigned char simbol : searchString)
         {
             if (simbol == '&')
             {
