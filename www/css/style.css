@@ -37,6 +37,14 @@ article .title {
     user-select: none;
 }
 
+article .subtitle {
+    margin: 1rem 0 1rem 0;
+    font-size: 1.5rem;
+    text-align: center;
+    font-weight: bold;
+    user-select: none;
+}
+
 article a {
     color: #313233;
     text-decoration: none;
